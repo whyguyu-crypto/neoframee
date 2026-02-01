@@ -1,0 +1,1038 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NeoFrame | Creative Studio</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;500;700;900&family=Space+Grotesk:wght@300;500;700&display=swap" rel="stylesheet">
+
+    <!-- Ikon (Remix Icon) -->
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+
+    <style>
+        :root {
+            /* Palette Warna sesuai Logo (Purple & Pink Theme) */
+            --bg-color: #0f0c29;
+            --text-main: #ffffff;
+            --text-secondary: #d1d5db;
+
+            /* Glass Effect */
+            --glass-bg: rgba(108, 99, 255, 0.15);
+            --glass-border: rgba(255, 101, 132, 0.2);
+            --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+            --glass-blur: blur(16px);
+
+            /* Aksen */
+            --accent-1: #6C63FF; /* Ungu */
+            --accent-2: #FF6584; /* Pink */
+            --accent-3: #43D9AD; /* Teal */
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            cursor: none;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+
+        h1, h2, h3, h4 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        /* --- Cursor --- */
+        .cursor-bubble {
+            position: fixed;
+            top: 0;
+            left: 0;
+            transform: translate(-50%, -50%);
+            border-radius: 50%;
+            z-index: 9999;
+            pointer-events: none;
+            mix-blend-mode: difference;
+        }
+
+        .bubble-dot {
+            width: 8px;
+            height: 8px;
+            background-color: var(--accent-2);
+        }
+
+        .bubble-outer {
+            width: 30px;
+            height: 30px;
+            background: rgba(108, 99, 255, 0.3);
+            border: 1px solid var(--accent-1);
+            transition: width 0.1s, height 0.1s, background 0.3s, transform 0.1s;
+        }
+
+        body.hovering .bubble-outer {
+            width: 80px;
+            height: 80px;
+            background: rgba(255, 101, 132, 0.3);
+            border-color: var(--accent-2);
+        }
+
+        .bubble-outer.clicking {
+            transform: translate(-50%, -50%) scale(0.6) !important;
+            background: rgba(255, 101, 132, 0.5) !important;
+            border-color: #fff !important;
+        }
+
+        /* --- Background --- */
+        .aurora-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+            background: linear-gradient(to bottom, #0f0c29, #302b63, #24243e);
+        }
+
+        .aurora-blob {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(90px);
+            opacity: 0.7;
+            animation: floatAurora 25s infinite alternate ease-in-out;
+        }
+
+        .blob-1 { top: -10%; left: -10%; width: 50vw; height: 50vw; background: linear-gradient(120deg, #6C63FF 0%, #a8a4e6 100%); animation-delay: 0s; }
+        .blob-2 { bottom: -10%; right: -10%; width: 60vw; height: 60vw; background: linear-gradient(120deg, #FF6584 0%, #f8b500 100%); animation-delay: -5s; }
+        .blob-3 { top: 40%; left: 40%; width: 40vw; height: 40vw; background: linear-gradient(120deg, #8E2DE2 0%, #4A00E0 100%); animation-delay: -10s; }
+
+        @keyframes floatAurora {
+            0% { transform: translate(0, 0) scale(1) rotate(0deg); }
+            33% { transform: translate(50px, -50px) scale(1.1) rotate(15deg); }
+            66% { transform: translate(-30px, 30px) scale(0.9) rotate(-10deg); }
+            100% { transform: translate(40px, 60px) scale(1.05) rotate(5deg); }
+        }
+
+        /* --- Utilities --- */
+        .glass {
+            background: var(--glass-bg);
+            backdrop-filter: var(--glass-blur);
+            -webkit-backdrop-filter: var(--glass-blur);
+            border: 1px solid var(--glass-border);
+            box-shadow: var(--glass-shadow);
+            border-radius: 20px;
+            color: var(--text-main);
+        }
+
+        /* --- Views Management --- */
+        .page-view { display: none; opacity: 0; transition: opacity 0.5s ease; min-height: 100vh; }
+        .page-view.active { display: block; opacity: 1; }
+
+        /* --- LOGIN PAGE STYLES --- */
+        #view-login {
+            display: flex; /* Flex untuk centering */
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            padding: 20px;
+        }
+
+        .login-card {
+            width: 100%;
+            max-width: 400px;
+            padding: 50px 40px;
+            text-align: center;
+            position: relative;
+            z-index: 10;
+        }
+
+        .login-logo-img {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            margin-bottom: 20px;
+            border: 2px solid var(--accent-2);
+            object-fit: cover;
+        }
+
+        .login-title {
+            font-size: 2rem;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #fff, var(--accent-2));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .login-subtitle {
+            color: var(--text-secondary);
+            margin-bottom: 40px;
+            font-size: 0.9rem;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+            text-align: left;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 0.85rem;
+            color: var(--accent-2);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--glass-border);
+            border-radius: 10px;
+            color: #fff;
+            font-family: 'Outfit', sans-serif;
+            font-size: 1rem;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .form-input:focus {
+            border-color: var(--accent-2);
+            background: rgba(0, 0, 0, 0.4);
+            box-shadow: 0 0 15px rgba(255, 101, 132, 0.2);
+        }
+
+        .btn-full {
+            width: 100%;
+            padding: 15px;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            margin-top: 10px;
+        }
+
+        .error-msg {
+            color: var(--accent-2);
+            font-size: 0.9rem;
+            margin-top: 15px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            display: none; /* Hidden by default */
+        }
+
+        /* --- Navbar --- */
+        nav {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90%;
+            max-width: 1200px;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            border-radius: 50px;
+            background: rgba(15, 12, 41, 0.85);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(108, 99, 255, 0.3);
+        }
+
+        nav:hover { transform: translateX(-50%) translateY(2px); border-color: var(--accent-2); }
+
+        .logo { font-size: 1.5rem; font-weight: 900; color: var(--text-main); display: flex; align-items: center; gap: 12px; text-decoration: none; }
+        .navbar-logo-img { width: 45px; height: 45px; border-radius: 50%; object-fit: cover; border: 2px solid var(--accent-2); transition: transform 0.3s ease; }
+        .logo:hover .navbar-logo-img { transform: rotate(10deg) scale(1.1); }
+
+        .nav-links { display: flex; gap: 30px; align-items: center; }
+        .nav-links a { text-decoration: none; color: var(--text-main); font-weight: 500; position: relative; transition: color 0.3s; }
+        .nav-links a::after { content: ''; position: absolute; width: 0; height: 2px; bottom: -4px; left: 0; background-color: var(--accent-2); transition: width 0.3s ease; }
+        .nav-links a:hover { color: var(--accent-2); }
+        .nav-links a:hover::after { width: 100%; }
+
+        /* Tombol Logout kecil */
+        .btn-logout {
+            padding: 8px 20px;
+            font-size: 0.8rem;
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            background: transparent;
+            color: var(--accent-2);
+            transition: all 0.3s;
+        }
+        .btn-logout:hover {
+            background: var(--accent-2);
+            color: #fff;
+        }
+
+        /* --- HOME & CONTENT STYLES --- */
+        section { padding: 100px 20px; max-width: 1200px; margin: 0 auto; }
+
+        /* Hero */
+        .hero { height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 0 20px; position: relative; }
+        .hero h1 { font-size: 5rem; line-height: 1.1; margin-bottom: 20px; background: linear-gradient(135deg, #ffffff 30%, var(--accent-2) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; animation: fadeInUp 1s forwards 0.5s; opacity: 0; transform: translateY(30px); }
+        .hero p { font-size: 1.2rem; color: var(--text-secondary); max-width: 600px; margin-bottom: 40px; animation: fadeInUp 1s forwards 0.8s; opacity: 0; transform: translateY(30px); }
+
+        /* Style tombol tambahan */
+        .hero-buttons {
+            display: flex;
+            gap: 20px;
+            opacity: 0;
+            animation: fadeInUp 1s forwards 1.1s;
+        }
+
+        .btn { padding: 15px 40px; border: none; border-radius: 50px; font-size: 1rem; font-weight: 700; transition: all 0.3s ease; text-decoration: none; display: inline-block; }
+        .btn-primary { background: transparent; color: var(--accent-2); border: 1px solid var(--accent-2); box-shadow: 0 0 10px rgba(255, 101, 132, 0.3); }
+        .btn-primary:hover { transform: translateY(-5px); background: rgba(255, 101, 132, 0.1); color: #fff; box-shadow: 0 0 25px rgba(255, 101, 132, 0.6); }
+
+        /* Tombol Eksternal (Warna Teal) */
+        .btn-external { background: var(--accent-3); color: #0f0c29; border: 1px solid var(--accent-3); }
+        .btn-external:hover { transform: translateY(-5px); background: #fff; color: var(--accent-1); box-shadow: 0 0 25px rgba(67, 217, 173, 0.6); }
+
+        /* Philosophy */
+        .section-header { margin-bottom: 60px; text-align: left; }
+        .section-header h2 { font-size: 3rem; margin-bottom: 10px; }
+        .philosophy-container { display: grid; grid-template-columns: 1fr 1fr; gap: 50px; align-items: center; }
+        .philosophy-text { padding: 40px; }
+        .logo-showcase { display: flex; justify-content: center; align-items: center; height: 400px; padding: 20px; }
+        .neo-logo-img { max-width: 300px; width: 100%; height: auto; object-fit: contain; border-radius: 30px; filter: drop-shadow(0 20px 40px rgba(0, 0, 0, 0.6)); transition: all 0.4s ease; }
+        .logo-showcase:hover .neo-logo-img { transform: scale(1.05) translateY(-5px); filter: drop-shadow(0 30px 50px rgba(255, 101, 132, 0.4)); }
+
+        /* Team */
+        .team-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 30px; }
+        .team-card { width: 220px; padding: 30px 20px; text-align: center; transition: all 0.4s ease; position: relative; overflow: hidden; cursor: none; }
+        .team-card:hover { transform: translateY(-15px); background: rgba(255,255,255, 0.08); border-color: var(--accent-2); }
+        .team-img { width: 120px; height: 120px; border-radius: 50%; object-fit: cover; margin-bottom: 20px; border: 3px solid var(--accent-1); padding: 5px; background: rgba(0,0,0,0.2); transition: transform 0.3s; }
+        .team-card:hover .team-img { transform: scale(1.1); border-color: var(--accent-2); }
+        .team-role { color: var(--accent-3); font-size: 0.9rem; font-weight: 700; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 1px; }
+        .team-name { font-size: 1.2rem; font-weight: 700; margin-bottom: 15px; color: var(--text-main); }
+        .social-icons { display: flex; justify-content: center; gap: 15px; opacity: 0; transform: translateY(10px); transition: all 0.3s ease; }
+        .team-card:hover .social-icons { opacity: 1; transform: translateY(0); }
+        .social-icons a { color: var(--text-main); font-size: 1.2rem; transition: color 0.3s; }
+        .social-icons a:hover { color: var(--accent-2); }
+
+        /* --- CONTACT STYLES --- */
+        .contact-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 30px; width: 90%; max-width: 1200px; margin: 0 auto; }
+        .contact-card { padding: 40px; text-align: center; transition: all 0.3s; text-decoration: none; color: var(--text-main); display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .contact-card:hover { background: rgba(255,255,255, 0.1); transform: scale(1.05); border-color: var(--accent-1); }
+        .contact-icon { font-size: 3rem; margin-bottom: 20px; color: var(--accent-2); }
+        .contact-label { font-size: 1.2rem; font-weight: 700; }
+
+        /* --- DETAIL PAGE (FULL WIDTH GALLERY) --- */
+        .project-detail-page, .profile-detail-page {
+            width: 100%;
+            padding-top: 120px;
+            padding-bottom: 50px;
+            margin: 0;
+        }
+
+        .back-btn {
+            display: inline-flex; align-items: center; gap: 10px;
+            padding: 10px 20px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--glass-border);
+            border-radius: 30px; text-decoration: none;
+            color: var(--text-main); font-weight: 600;
+            margin-bottom: 40px; transition: all 0.3s;
+            margin-left: 40px;
+            display: inline-block;
+        }
+        .back-btn:hover {
+            background: rgba(255,255,255,0.1);
+            transform: translateX(-5px);
+            border-color: var(--accent-2);
+            color: var(--accent-2);
+        }
+
+        .detail-wrapper {
+            width: 90%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 40px;
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .detail-header { text-align: center; margin-bottom: 30px; }
+        .detail-title-large {
+            font-size: 3.5rem;
+            background: linear-gradient(135deg, #ffffff 30%, var(--accent-2) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 15px;
+        }
+        .detail-meta {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            color: var(--accent-2);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-size: 0.9rem;
+        }
+
+        .project-gallery {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 2px;
+            margin-bottom: 60px;
+            width: 100%;
+        }
+
+        .project-card {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 40px;
+            overflow: hidden;
+            transition: all 0.4s ease;
+            position: relative;
+            height: 220px;
+            width: 100%;
+        }
+
+        .project-card:hover {
+            transform: scale(1.02);
+            z-index: 10;
+            background: rgba(255, 101, 132, 0.05);
+            border-color: var(--accent-2);
+        }
+
+        .project-card img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+        }
+
+        .project-card:hover img { transform: scale(1.15); }
+
+        .project-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(to top, rgba(0,0,0,0.95), transparent);
+            color: #fff;
+            transform: translateY(100%);
+            transition: transform 0.3s ease;
+            text-align: center;
+        }
+
+        .project-card:hover .project-overlay { transform: translateY(0); }
+        .project-overlay h4 { font-size: 0.9rem; font-weight: 600; }
+
+        .project-desc-text {
+            width: 90%;
+            max-width: 900px;
+            margin: 0 auto;
+            background: var(--glass-bg);
+            padding: 40px;
+            border-radius: 20px;
+            border: 1px solid var(--glass-border);
+            font-size: 1.1rem;
+            line-height: 1.8;
+            color: var(--text-secondary);
+        }
+
+        /* --- PROFILE STYLES --- */
+        .profile-layout {
+            width: 90%;
+            max-width: 1200px;
+            margin: 0 auto 40px auto;
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 40px;
+            background: var(--glass-bg);
+            padding: 40px;
+            border-radius: 30px;
+            border: 1px solid var(--glass-border);
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            align-items: start;
+        }
+
+        .profile-sidebar { text-align: center; }
+        .profile-img-large {
+            width: 100%;
+            aspect-ratio: 3/4;
+            object-fit: cover;
+            border-radius: 20px;
+            margin-bottom: 25px;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.4);
+            border: 1px solid var(--accent-2);
+            transition: transform 0.4s ease;
+        }
+        .profile-img-large:hover { transform: scale(1.02); }
+        .profile-name { font-size: 2rem; margin-bottom: 5px; color: var(--accent-2); }
+        .profile-role { font-size: 1.1rem; color: var(--accent-1); margin-bottom: 20px; font-weight: 600; }
+
+        .profile-content h3 { font-size: 1.8rem; margin-bottom: 15px; margin-top: 30px; display: flex; align-items: center; gap: 10px; }
+        .profile-content h3 i { color: var(--accent-3); }
+        .profile-content p { font-size: 1.1rem; color: var(--text-secondary); line-height: 1.8; margin-bottom: 15px; }
+
+        .works-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+            margin-top: 20px;
+        }
+
+        .work-box {
+            background: rgba(255,255, 255, 0.03);
+            border: 1px solid var(--glass-border);
+            border-radius: 25px;
+            padding: 40px 30px;
+            min-height: 220px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            cursor: none;
+        }
+
+        .work-box:hover {
+            transform: translateY(-10px) scale(1.02);
+            background: rgba(255,255,255, 0.07);
+            box-shadow: 0 20px 40px rgba(255, 101, 132, 0.15);
+            border-color: var(--accent-2);
+        }
+
+        .work-box i { font-size: 3.5rem; color: var(--accent-1); margin-bottom: 20px; transition: transform 0.4s; }
+        .work-box:hover i { transform: scale(1.1) rotate(5deg); color: var(--accent-2); }
+        .work-title { font-weight: 700; font-size: 1.3rem; color: var(--text-main); line-height: 1.4; position: relative; z-index: 2; }
+
+        footer { text-align: center; padding: 40px; margin-top: 50px; color: var(--text-secondary); font-size: 0.9rem; }
+
+        @keyframes fadeInUp { to { opacity: 1; transform: translateY(0); } }
+
+        /* Responsive */
+        @media (max-width: 992px) {
+            .philosophy-container { grid-template-columns: 1fr; }
+            .profile-layout { grid-template-columns: 1fr; }
+            .profile-sidebar { display: flex; flex-direction: column; align-items: center; margin-bottom: 20px; }
+            .profile-img-large { width: 300px; aspect-ratio: 3/4; }
+            .project-gallery { grid-template-columns: repeat(3, 1fr); padding: 0 20px; }
+            .hero-buttons { flex-direction: column; }
+        }
+
+        @media (max-width: 768px) {
+            .hero h1 { font-size: 3rem; }
+            .team-grid, .works-grid { grid-template-columns: 1fr; }
+            .nav-links { display: none; }
+            .cursor-bubble { display: none; }
+            * { cursor: auto; }
+            .profile-layout { padding: 20px; }
+            .project-gallery { grid-template-columns: repeat(2, 1fr); width: 100%; margin-left: 0; padding: 0 10px; gap: 10px; }
+            .project-card { height: 180px; border-radius: 20px; }
+            .back-btn { margin-left: 10px; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Cursor -->
+<div class="cursor-bubble bubble-dot" data-cursor-dot=""></div>
+<div class="cursor-bubble bubble-outer" data-cursor-outline=""></div>
+
+<!-- Background -->
+<div class="aurora-bg">
+    <div class="aurora-blob blob-1"></div>
+    <div class="aurora-blob blob-2"></div>
+    <div class="aurora-blob blob-3"></div>
+</div>
+
+<!-- VIEW 0: LOGIN SCREEN (ACTIVE BY DEFAULT) -->
+<div id="view-login" class="page-view active">
+    <div class="login-card glass interactive-hover">
+        <img src="https://z-cdn-media.chatglm.cn/files/6377b587-d356-42b4-9b86-f57a6388ba8e.png?auth_key=1868007967-5a1e288a14f84a6791828bc5c0968fb4-0-707f213f78c4a374799b5827c0a21aab" alt="NeoFrame Logo" class="login-logo-img">
+        <h2 class="login-title">NeoFrame</h2>
+        <p class="login-subtitle">Creative Studio Access</p>
+
+        <form id="loginForm">
+            <div class="form-group">
+                <label class="form-label">Nama Pengguna</label>
+                <input type="text" id="username" class="form-input interactive-hover" placeholder="Masukkan nama..." required>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Kata Sandi</label>
+                <input type="password" id="password" class="form-input interactive-hover" placeholder="••••••" required>
+            </div>
+            <button type="submit" class="btn btn-primary btn-full interactive-hover">Masuk</button>
+
+            <p id="error-msg" class="error-msg">Nama atau kata sandi salah!</p>
+        </form>
+    </div>
+</div>
+
+<!-- Navbar (Hidden initially, shown via JS after login) -->
+<nav id="navbar" class="glass interactive-hover" style="display: none;">
+    <a href="#" class="logo" onclick="goHome()">
+        <img src="https://z-cdn-media.chatglm.cn/files/6377b587-d356-42b4-9b86-f57a6388ba8e.png?auth_key=1868007967-5a1e288a14f84a6791828bc5c0968fb4-0-707f213f78c4a374799b5827c0a21aab" alt="NeoFrame Logo" class="navbar-logo-img">
+        NeoFrame
+    </a>
+    <div class="nav-links">
+        <a href="#" onclick="goHome()">Beranda</a>
+        <a href="#philosophy" onclick="scrollToId('philosophy')">Filosofi</a>
+        <a href="#team" onclick="scrollToId('team')">Kreator</a>
+        <!-- Link Karya DIHAPUS -->
+        <a href="#contact" onclick="scrollToId('contact')">Kontak</a>
+        <button onclick="logout()" class="btn-logout interactive-hover">Keluar</button>
+    </div>
+</nav>
+
+<!-- VIEW 1: HOME -->
+<div id="view-home" class="page-view">
+    <section class="hero">
+        <h1>NeoFrame Creative<br>Studio</h1>
+        <p>Studio kreatif yang menggabungkan estetika modern, teknologi interaktif, dan desain yang tak lekang oleh waktu.</p>
+
+        <!-- TAMBAHAN: Tombol untuk ke HTML kedua -->
+        <div class="hero-buttons">
+            <a href="#philosophy" onclick="scrollToId('philosophy')" class="btn btn-primary interactive-hover">Pelajari Lebih Lanjut</a>
+            <!-- TOMBOL DIPERBARUI: Mengarah ke file 'page.html' dengan teks baru -->
+            <a href="page.html" class="btn btn-external interactive-hover" target="_blank">Halaman Karya</a>
+        </div>
+    </section>
+
+    <section id="philosophy">
+        <div class="section-header">
+            <h2>Filosofi Logo</h2>
+            <p>Makna di balik identitas visual kami</p>
+        </div>
+        <div class="glass philosophy-container interactive-hover">
+            <div class="philosophy-text">
+                <h3>NeoFrame</h3>
+                <p style="margin: 20px 0;">
+                    <strong>Neo</strong> melambangkan hal baru, masa depan, dan inovasi. <strong>Frame</strong> merepresentasikan struktur, perspektif, dan batasan kreatif.
+                </p>
+                <p>Logo NeoFrame adalah visualisasi dari identitas seorang desainer kreatif yang adaptif di era modern.</p>
+            </div>
+            <div class="logo-showcase">
+                <img src="https://z-cdn-media.chatglm.cn/files/6377b587-d356-42b4-9b86-f57a6388ba8e.png?auth_key=1868007967-5a1e288a14f84a6791828bc5c0968fb4-0-707f213f78c4a374799b5827c0a21aab" alt="NeoFrame Logo" class="neo-logo-img">
+            </div>
+        </div>
+    </section>
+
+    <section id="team">
+        <div class="section-header">
+            <h2>Kreator Kami</h2>
+            <p>Klik profil untuk melihat detail lengkap</p>
+        </div>
+        <div class="team-grid">
+            <div class="glass team-card interactive-hover" onclick="openProfile('wahyu')">
+                <img src="wahyu.jpg" alt="Web Developer" class="team-img">
+                <div class="team-role">Web Developer</div>
+                <div class="team-name">Ruly Wahyu Firmansyah</div>
+                <div class="social-icons"><span style="font-size: 0.8rem; color: var(--text-secondary);">Klik untuk detail</span></div>
+            </div>
+            <div class="glass team-card interactive-hover" onclick="openProfile('ira')">
+                <img src="ira.jpg" alt="Photographer" class="team-img">
+                <div class="team-role">Photographer</div>
+                <div class="team-name">Putri Kirana Aurelia</div>
+                <div class="social-icons"><span style="font-size: 0.8rem; color: var(--text-secondary);">Klik untuk detail</span></div>
+            </div>
+            <div class="glass team-card interactive-hover" onclick="openProfile('zahra')">
+                <img src="zahra.jpg" alt="Designer" class="team-img">
+                <div class="team-role">Designer</div>
+                <div class="team-name">Zahra Auralia Putri Harynta</div>
+                <div class="social-icons"><span style="font-size: 0.8rem; color: var(--text-secondary);">Klik untuk detail</span></div>
+            </div>
+            <div class="glass team-card interactive-hover" onclick="openProfile('dea')">
+                <img src="dea.jpg" alt="Media Sosial" class="team-img">
+                <div class="team-role">Media Sosial</div>
+                <div class="team-name">Dea Sisilia</div>
+                <div class="social-icons"><span style="font-size: 0.8rem; color: var(--text-secondary);">Klik untuk detail</span></div>
+            </div>
+            <div class="glass team-card interactive-hover" onclick="openProfile('risky')">
+                <img src="risky.jpg" alt="Editing" class="team-img">
+                <div class="team-role">Videografi</div>
+                <div class="team-name">Risky Dwi Saputra</div>
+                <div class="social-icons"><span style="font-size: 0.8rem; color: var(--text-secondary);">Klik untuk detail</span></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SECTION PORTFOLIO DIHAPUS SECARA MENYELURUH -->
+
+    <section id="contact">
+        <div class="section-header">
+            <h2>Hubungi Kami</h2>
+            <p>Mari buat sesuatu yang luar biasa bersama</p>
+        </div>
+        <div class="contact-container">
+            <a href="#" class="glass contact-card interactive-hover" onclick="alert('Mengarahkan ke Instagram')">
+                <i class="ri-instagram-line contact-icon"></i>
+                <span class="contact-label">@NeoFrame.id</span>
+            </a>
+            <a href="#" class="glass contact-card interactive-hover" onclick="alert('Mengarahkan ke Email')">
+                <i class="ri-mail-send-line contact-icon"></i>
+                <span class="contact-label">hello@neoframe.id</span>
+            </a>
+            <a href="#" class="glass contact-card interactive-hover" onclick="alert('Mengarahkan ke WhatsApp')">
+                <i class="ri-whatsapp-line contact-icon"></i>
+                <span class="contact-label">+62 857 3072 6987</span>
+            </a>
+        </div>
+    </section>
+
+    <footer>
+        <p>&copy; 2026 NeoFrame Creative Studio. All Rights Reserved.</p>
+    </footer>
+</div>
+
+<!-- VIEW 2: DETAIL (FULL WIDTH & ROUND CORNERS) -->
+<div id="view-detail" class="page-view">
+    <div class="project-detail-page">
+
+        <!-- Detail Header Wrapper (Centered) -->
+        <div class="detail-wrapper">
+            <a href="#" class="back-btn interactive-hover" onclick="goHome()">
+                <i class="ri-arrow-left-line"></i> Kembali ke Beranda
+            </a>
+
+            <div class="detail-header">
+                <h2 id="detail-title" class="detail-title-large">Branding</h2>
+                <div class="detail-meta">
+                    <span id="detail-category">Branding</span> &bull; <span>2026</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- FULL WIDTH GALLERY -->
+        <div class="project-gallery" id="project-gallery-container">
+            <!-- Kotak-kotak karya akan di-inject via JS disini -->
+        </div>
+
+        <!-- Wrapper Deskripsi -->
+        <div class="detail-wrapper">
+            <div class="project-desc-text">
+                <p id="detail-desc-text">Kami fokus pada penciptaan identitas visual yang unik untuk setiap klien. Melalui riset mendalam dan eksplorasi kreatif, kami menghasilkan konsep yang tidak hanya indah secara visual, tetapi juga relevan dan berdampak.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- VIEW 3: PROFILE -->
+<div id="view-profile" class="page-view">
+    <div class="profile-detail-page">
+        <a href="#" class="back-btn interactive-hover" onclick="goHome()">
+            <i class="ri-arrow-left-line"></i> Kembali ke Tim
+        </a>
+        <div class="profile-layout">
+            <div class="profile-sidebar">
+                <img id="prof-img" src="" alt="Profile" class="profile-img-large">
+                <h2 id="prof-name" class="profile-name">Nama</h2>
+                <div id="prof-role" class="profile-role">Role</div>
+                <div style="margin-top: 20px;">
+                    <p style="font-size: 0.9rem; color: var(--text-secondary);">Social Media</p>
+                    <div class="social-icons" style="opacity: 1; transform: translateY(0); margin-top: 10px;">
+                        <a href="#" style="color: var(--text-main);"><i class="ri-instagram-line"></i></a>
+                        <a href="#" style="color: var(--text-main);"><i class="ri-linkedin-fill"></i></a>
+                        <a href="#" style="color: var(--text-main);"><i class="ri-behance-fill"></i></a>
+                    </div>
+                </div>
+            </div>
+            <div class="profile-content">
+                <h3><i class="ri-user-smile-line"></i> Perkenalan</h3>
+                <p id="prof-bio">Isi bio akan muncul di sini.</p>
+                <h3><i class="ri-briefcase-4-line"></i> Karya & Pengalaman</h3>
+                <div class="works-grid" id="prof-works"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    /* --- 0. LOGIC LOGIN (BARU) --- */
+    const loginView = document.getElementById('view-login');
+    const navbar = document.getElementById('navbar');
+
+    // Kredensial Hardcoded (Untuk Demo)
+    const VALID_USER = 'admin';
+    const VALID_PASS = '12345';
+
+    const loginForm = document.getElementById('loginForm');
+    const errorMsg = document.getElementById('error-msg');
+
+    loginForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        const userIn = document.getElementById('username').value;
+        const passIn = document.getElementById('password').value;
+
+        if(userIn === VALID_USER && passIn === VALID_PASS) {
+            // Login Sukses
+            errorMsg.style.display = 'none';
+
+            // Animasi transisi keluar
+            loginView.style.opacity = '0';
+            setTimeout(() => {
+                loginView.classList.remove('active');
+                loginView.style.display = 'none'; // Pastikan tidak flex
+
+                // Tampilkan Navbar
+                navbar.style.display = 'flex';
+
+                // Pindah ke Home
+                goHome();
+            }, 500);
+        } else {
+            // Login Gagal
+            errorMsg.style.display = 'block';
+            errorMsg.style.opacity = '1';
+
+            // Shake effect sederhana pada form
+            const card = document.querySelector('.login-card');
+            card.style.transform = 'translateX(10px)';
+            setTimeout(() => { card.style.transform = 'translateX(-10px)'; }, 100);
+            setTimeout(() => { card.style.transform = 'translateX(5px)'; }, 200);
+            setTimeout(() => { card.style.transform = 'translateX(0)'; }, 300);
+        }
+    });
+
+    function logout() {
+        // Sembunyikan navbar dulu
+        navbar.style.display = 'none';
+
+        // Reset View
+        document.querySelectorAll('.page-view').forEach(el => el.classList.remove('active'));
+
+        // Tampilkan Login View lagi
+        loginView.style.display = 'flex'; // Kembalikan ke flex
+        // Sedikit delay agar animasi fade in mulai dari opacity 0
+        requestAnimationFrame(() => {
+            loginView.style.opacity = '0';
+            setTimeout(() => {
+                loginView.classList.add('active');
+                loginView.style.opacity = '1';
+                // Reset Form
+                loginForm.reset();
+                errorMsg.style.display = 'none';
+            }, 50);
+        });
+    }
+
+    /* --- 1. Custom Cursor --- */
+    const cursorDot = document.querySelector('[data-cursor-dot]');
+    const cursorOutline = document.querySelector('[data-cursor-outline]');
+
+    window.addEventListener("mousemove", function(e) {
+        const posX = e.clientX;
+        const posY = e.clientY;
+
+        cursorDot.style.left = `${posX}px`;
+        cursorDot.style.top = `${posY}px`;
+
+        cursorOutline.animate({ left: `${posX}px`, top: `${posY}px` }, { duration: 500, fill: "forwards" });
+    });
+
+    document.querySelectorAll('.interactive-hover, a, button, .team-card').forEach(el => {
+        el.addEventListener('mouseenter', () => document.body.classList.add('hovering'));
+        el.addEventListener('mouseleave', () => document.body.classList.remove('hovering'));
+    });
+
+    /* --- CLICK EFFECT (Efek Sentuhan) --- */
+    window.addEventListener('mousedown', () => {
+        cursorOutline.classList.add('clicking');
+    });
+
+    window.addEventListener('mouseup', () => {
+        cursorOutline.classList.remove('clicking');
+    });
+
+    /* --- 2. DATA KARYA (PORTFOLIO) --- */
+    /* DATA TETAP ADA DI SCRIPT MESKIPUN TIDAK DITAMPILKAN DI UI */
+    const portfolioData = {
+        'Branding': {
+            category: 'Branding',
+            desc: 'Menciptakan identitas visual yang kuat mulai dari logo, palet warna, hingga panduan gaya (brand guidelines). Kami memastikan brand Anda memiliki karakter yang unik di pasar.',
+            images: [
+                'https://picsum.photos/seed/bwork1/600/600',
+                'https://picsum.photos/seed/bwork2/600/600',
+                'https://picsum.photos/seed/bwork3/600/600',
+                'https://picsum.photos/seed/bwork4/600/600',
+                'https://picsum.photos/seed/bwork5/600/600',
+                'https://picsum.photos/seed/bwork6/600/600',
+                'https://picsum.photos/seed/bwork7/600/600',
+                'https://picsum.photos/seed/bwork8/600/600'
+            ]
+        },
+        'Desain Grafis': {
+            category: 'Graphic Design',
+            desc: 'Solusi desain grafis untuk kebutuhan pemasaran, publikasi, dan komunikasi visual. Fokus pada tata letak, tipografi, dan elemen visual yang berdampak.',
+            images: [
+                'https://picsum.photos/seed/gwork1/600/600',
+                'https://picsum.photos/seed/gwork2/600/600',
+                'https://picsum.photos/seed/gwork3/600/600',
+                'https://picsum.photos/seed/gwork4/600/600'
+            ]
+        },
+        'UI/UX Desain': {
+            category: 'UI/UX Design',
+            desc: 'Merancang antarmuka aplikasi dan website yang intuitif dan menarik secara estetika. Dari wireframe hingga high-fidelity prototype.',
+            images: [
+                'https://picsum.photos/seed/uwork1/600/600',
+                'https://picsum.photos/seed/uwork2/600/600',
+                'https://picsum.photos/seed/uwork3/600/600',
+                'https://picsum.photos/seed/uwork4/600/600',
+                'https://picsum.photos/seed/uwork5/600/600'
+            ]
+        },
+        'Fotografi & Videografi': {
+            category: 'Photography',
+            desc: 'Menangkap momen dan cerita melalui lensa kamera. Layanan fotografi produk, korporat, hingga videografi sinematik.',
+            images: [
+                'https://picsum.photos/seed/pwork1/600/600',
+                'https://picsum.photos/seed/pwork2/600/600',
+                'https://picsum.photos/seed/pwork3/600/600',
+                'https://picsum.photos/seed/pwork4/600/600'
+            ]
+        },
+        'Illustration & Creative Art': {
+            category: 'Illustration',
+            desc: 'Seni ilustrasi digital untuk buku, majalah, game, dan kebutuhan kreatif lainnya. Gaya unik dan orisinal.',
+            images: [
+                'https://picsum.photos/seed/iwork1/600/600',
+                'https://picsum.photos/seed/iwork2/600/600',
+                'https://picsum.photos/seed/iwork3/600/600',
+                'https://picsum.photos/seed/iwork4/600/600',
+                'https://picsum.photos/seed/iwork5/600/600'
+            ]
+        },
+        'Social Media': {
+            category: 'Social Media',
+            desc: 'Manajemen konten dan desain feed media sosial untuk meningkatkan engagement dan kehadiran brand Anda secara online.',
+            images: [
+                'https://picsum.photos/seed/swork1/600/600',
+                'https://picsum.photos/seed/swork2/600/600',
+                'https://picsum.photos/seed/swork3/600/600',
+                'https://picsum.photos/seed/swork4/600/600'
+            ]
+        }
+    };
+
+    /* --- 3. DATA TIM --- */
+    const teamData = {
+        'wahyu': { name: "Ruly Wahyu Firmansyah", role: "UI/UX Designer", img: "wahyu.jpg", bio: "Perkenalkan, saya Ruly Wahyu Firmansyah, UI/UX Designer yang menggabungkan estetika visual dengan riset pengguna untuk menciptakan pengalaman digital yang efektif dan bermakna. Saya terbiasa merancang wireframe, prototipe, hingga desain final yang tidak hanya menarik secara visual, tetapi juga mudah digunakan.", skills: ["Web Developer"], works: ["Pendirian NeoFrame", "Rebranding Hotel", "Speaker Summit"] },
+        'ira': { name: "Putri Kirana Aurelia", role: "Art Director", img: "ira.jpg", bio: "Perkenalkan, nama saya Putri Kirana Aurelia. Saya adalah seorang fotografer pelajar yang fokus pada seni menangkap momen dan cerita melalui lensa. Saya dedikasikan waktu saya untuk mempelajari teknik visual dan komposisi yang bermakna.", skills: ["Fotografi"], works: ["Campaign ID", "Cover Majalah", "Pameran Seni"] },
+        'zahra': { name: "Zahra Auralia", role: "Lead Developer", img: "zahra.jpg", bio: "Perkenalkan, nama saya Zahra Auralia Putri. Saya adalah seorang designer pelajar yang fokus pada penciptaan solusi visual yang kreatif dan fungsional. Saya memiliki minat besar dalam menggabungkan estetika dengan komunikasi yang efektif.", skills: ["Designer"], works: ["Website Resmi", "Aplikasi PayFast", "Sistem Internal"] },
+        'dea': { name: "Dea Sisilia", role: "Media Sosial", img: "dea.jpg", bio: "Perkenalkan, nama saya Dea Sisilia. Saya adalah marketing pelajar yang berfokus pada pengembangan brand dan manajemen media sosial. Saya berkomitmen untuk belajar membangun hubungan yang kuat antara produk dan pengguna.", skills: ["Media Sosial"], works: ["Redesign Bank", "Dashboard SaaS", "App Learning"] },
+        'risky': { name: "Risky Dwi Saputra", role: "Motion Artist", img: "risky.jpg", bio: "Perkenalkan, nama saya Risky Dwi Saputra. Saya adalah seorang videografer pelajar yang fokus pada pembuatan konten visual berbasis cerita. Saya berdedikasi untuk menggabungkan teknik pengambilan gambar dan editing guna menciptakan karya yang hidup.", skills: ["Videografi"], works: ["Video Profil XYZ", "Intro Youtube", "Iklan TV"] }
+    };
+
+    /* --- 4. NAVIGASI --- */
+    const viewHome = document.getElementById('view-home');
+    const viewDetail = document.getElementById('view-detail');
+    const viewProfile = document.getElementById('view-profile');
+
+    function goToDetail(title, categoryKey) {
+        const data = portfolioData[title];
+        if (!data) return;
+
+        // Set Judul & Deskripsi
+        document.getElementById('detail-title').textContent = title;
+        document.getElementById('detail-category').textContent = data.category;
+        document.getElementById('detail-desc-text').textContent = data.desc;
+
+        // Render Gallery Grid (Kotak-kotak)
+        const galleryContainer = document.getElementById('project-gallery-container');
+        galleryContainer.innerHTML = ''; // Clear previous
+
+        data.images.forEach((imgUrl, index) => {
+            const card = document.createElement('div');
+            card.className = 'project-card interactive-hover';
+
+            // HTML Kotak Karya
+            card.innerHTML = `
+                    <img src="${imgUrl}" alt="Work ${index + 1}">
+                    <div class="project-overlay">
+                        <h4>Project Sample ${index + 1}</h4>
+                    </div>
+                `;
+            galleryContainer.appendChild(card);
+        });
+
+        switchView(viewDetail);
+    }
+
+    function openProfile(memberId) {
+        const data = teamData[memberId];
+        if (!data) return;
+        document.getElementById('prof-img').src = data.img;
+        document.getElementById('prof-name').textContent = data.name;
+        document.getElementById('prof-role').textContent = data.role;
+        document.getElementById('prof-bio').textContent = data.bio;
+
+        const worksContainer = document.getElementById('prof-works');
+        worksContainer.innerHTML = '';
+        data.works.forEach(workTitle => {
+            const box = document.createElement('div');
+            box.className = 'work-box interactive-hover';
+            box.innerHTML = `<i class="ri-trophy-line"></i><span class="work-title">${workTitle}</span>`;
+            worksContainer.appendChild(box);
+        });
+        switchView(viewProfile);
+    }
+
+    function goHome() {
+        viewDetail.classList.remove('active');
+        viewProfile.classList.remove('active');
+        setTimeout(() => { viewHome.classList.add('active'); }, 100);
+    }
+
+    function switchView(targetView) {
+        if (viewHome.classList.contains('active')) viewHome.classList.remove('active');
+        viewDetail.classList.remove('active');
+        viewProfile.classList.remove('active');
+        setTimeout(() => { targetView.classList.add('active'); window.scrollTo(0, 0); }, 200);
+    }
+
+    function scrollToId(id) {
+        const element = document.getElementById(id);
+        if (viewHome.classList.contains('active') && element) {
+            element.scrollIntoView({ behavior: 'smooth' });
+        } else if (!viewHome.classList.contains('active')) {
+            goHome();
+            setTimeout(() => { document.getElementById(id).scrollIntoView({ behavior: 'smooth' }); }, 400);
+        }
+    }
+
+    // Scroll Reveal Animation
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.style.opacity = '1';
+                entry.target.style.transform = 'translateY(0)';
+                observer.unobserve(entry.target);
+            }
+        });
+    }, { threshold: 0.1 });
+
+    document.querySelectorAll('.team-card, .contact-card').forEach((el, index) => {
+        el.style.opacity = '0';
+        el.style.transform = 'translateY(50px)';
+        el.style.transition = 'all 0.6s ease-out';
+        el.style.transitionDelay = `${index * 0.05}s`;
+        observer.observe(el);
+    });
+
+</script>
+</body>
+</html>
